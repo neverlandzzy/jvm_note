@@ -33,8 +33,8 @@ JVM 是一个跨语言的平台。各语言用各自的编译器编译出**字�
 * 在内存中， 多线程共享方法区\(method area\)和堆\(heap\)
 * Java栈，本地方法栈和程序计数器为线程私有
 * 执行引擎\(Execution Engine\)包括解释器\(Interpreter\)，JIT即时编译器\(JIT Compiler\)和垃圾回收器\(Garbage Collection\)
-  * 解释器是逐行解释字节码
-  * 即时编译器（后端编译）将热点代码（e.g. for循环中的重复代码）直接编译为本地机器指令并缓存以提高效率
+  * 解释器是逐行解释字节码，响应时间快。
+  * 即时编译器（后端编译）将热点代码（e.g. for循环中的重复代码）直接编译为本地机器指令并缓存以提高效率。
 
 ![](.gitbook/assets/screen-shot-2021-02-08-at-11.00.38-pm.png)
 
@@ -72,4 +72,11 @@ Java编译器输入的指令流基本上是一种**基于栈的指令集架构**
   * 由于操作系统出现错误而导致Java虚拟机进程终止
   * 某线程调用Runtime类或System类的exit方法，或Runtime类的halt方法，并且Java安全管理器也允许这次exit或halt操作
   * 此外，JNI\(Java Native Interface\)规范描述了用JNI Invocation API来加载或卸载Java虚拟机时，虚拟机的退出情况
+
+**常见商用JVM介绍**
+
+* HotSpot\(Oracle\) - 最常用，面试默认。通过编译器和解释器协同工作，在最优化的程序响应时间和最佳执行性能中取得平衡。
+* JRockit\(Oracle\) - 专注于服务器端应用。不关注程序启动速度，因此不包含解释器。全部代码靠即时编译器编译后执行。JRockit Real Time提供毫秒或微秒级的JVM响应时间
+* J9\(IBM\) - 定位与HotSpot接近。
+* Graal VM\(Oracle\) - 2018年发布，跨语言全栈虚拟机，可以作为任何语言的运行平台使用
 
