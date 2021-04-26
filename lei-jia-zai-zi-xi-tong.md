@@ -1,6 +1,6 @@
 # 类加载子系统
 
-### 内存结构概述
+## 内存结构概述
 
 ![](.gitbook/assets/image%20%282%29.png)
 
@@ -9,7 +9,7 @@
 * DL - Dynamic Linking 动态链接
 * RA - Return Address 方法返回地址
 
-### **类加载器\(Class Loader\)与类的加载过程**
+## **类加载器\(Class Loader\)与类的加载过程**
 
 三个阶段：**加载阶段，链接阶段，初始化阶段**
 
