@@ -78,3 +78,13 @@ ClassLoader只负责class文件的加载，至于其是否可以运行，由执�
 * 若该类具有父类，JVM会保证子类的&lt;clinit&gt;\(\)执行前，父类的&lt;clinit&gt;\(\)已执行完毕
 * 虚拟机必须保证一个类的&lt;clinit&gt;\(\)方法在多线程下被同步加锁
 
+## 类加载器分类
+
+JVM支持两种类型的类加载器：**引导类加载器**\(Bootstrap ClassLoader\)和**自定义类加载器**\(User-Defined ClassLoader\)。所有派生于抽象类的类加载器\(abstract ClassLoader\)都划分为自定义类加载器。
+
+![](.gitbook/assets/screen-shot-2021-04-27-at-8.59.33-pm.png)
+
+这里四者之间的关系是包含关系，不是上层下层，也不是子父类的继承关系。引导类加载器是C/C++实现的，其它的加载器都是Java实现的。
+
+Java的核心类库都是使用引导类加载器进行加载。（参考ClassLoaderTest）
+
