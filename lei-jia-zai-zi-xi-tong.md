@@ -86,5 +86,29 @@ JVM支持两种类型的类加载器：**引导类加载器**\(Bootstrap ClassLo
 
 这里四者之间的关系是包含关系，不是上层下层，也不是子父类的继承关系。引导类加载器是C/C++实现的，其它的加载器都是Java实现的。
 
-Java的核心类库都是使用引导类加载器进行加载。（参考ClassLoaderTest）
+Java的核心类库\(e.g. String\)都是使用引导类加载器进行加载。（参考ClassLoaderTest）
+
+**引导类加载器**\(Bootstrap ClassLoader\)
+
+* 这个类加载使用C/C++实现，嵌套在JVM内部
+* 它用来加载Java的核心库\(JAVA\_HOME/jre/lib/rt.jar, resources.jar或者sun.boot.class.path路径下的内容\)，用于提供JVM自身需要的类
+* 并不继承自java.lang.ClassLoader，没有父加载器
+* 加载扩展类和应用程序类加载器，并指定为它们的父类加载器
+* 出于安全考虑，Bootstrap启动类加载器只加载包名为java, javax, sun等开头的类
+
+**扩展类加载器**\(Extension ClassLoader\)
+
+* Java语言编写，由sun.misc.Launcher$ExtClassLoader实现
+* 派生于ClassLoader类
+* 父类加载器为引导类加载器
+* 从java.ext.dirs系统属性所指定的目录中加载类库，或从JDK的安装目录的jre/lib/ext子目录下加载类库。**如果用户创建的JAR放在此目录下，也会自动由扩展类加载器加载。**
+
+**系统类加载器**\(应用程序类加载器，AppClassLoader\)
+
+* Java语言编写，由sun.misc.Launcher$AppClassLoader实现
+* 派生于ClassLoader类
+* 父类加载器为扩展类加载器
+* 它负责加载环境变量classpath或系统属性java.class.path指定路径下的类库
+* 该类加载是程序中默认的类加载器，一般来说，Java应用的类都是由它来完成加载
+* 通过ClassLoader\#getSystemClassLoader\(\)方法可以获取到该类加载器
 
