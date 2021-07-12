@@ -9,5 +9,5 @@ JVM定义了若干种程序运行期间会使用到的运行时数据区，其�
 
 每个JVM实例对应一个Runtime实例\(instance of class Runtime\)，即为运行时环境。
 
-![](.gitbook/assets/screen-shot-2021-07-11-at-11.14.42-pm.png)
+![](.gitbook/assets/image%20%283%29.png)
 
