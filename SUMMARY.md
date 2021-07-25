@@ -5,4 +5,7 @@
 * [运行时数据区概述及线程](yun-hang-shi-shu-ju-qu-gai-shu-ji-xian-cheng.md)
 * [程序计数器（PC寄存器）](cheng-xu-ji-shu-qi-pc-ji-cun-qi.md)
 * [虚拟机栈\(JVM栈\)](xu-ni-ji-zhan-jvm-zhan.md)
+* [本地方法接口](ben-di-fang-fa-jie-kou.md)
+* [本地方法栈](ben-di-fang-fa-zhan.md)
+* [堆](dui.md)
 
