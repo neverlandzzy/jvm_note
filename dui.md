@@ -69,19 +69,62 @@ Java堆区在JVM实例启动的时候被创建，其空间大小也就确定了�
 
 ![](.gitbook/assets/screen-shot-2021-07-29-at-12.18.47-am.png)
 
-### 配置新生代与老年代在堆结构的占比
+* 几乎所有的Java对象都是在Eden空间中被new出来
+* 绝大部分的Java对象的销毁都在新生代进行
+
+### 相关参数
+
+**-XX:NewRatio -** 配置年轻代与老年代在堆结构的占比，默认值为2
 
 ![](.gitbook/assets/screen-shot-2021-07-29-at-12.20.23-am.png)
 
-**默认 -XX:NewRation=2**  表示新生代占1， 老年代占2， 新生代占整个堆的1/3
+默认 -XX:NewRatio=2  表示新生代占1， 老年代占2， 新生代占整个堆的1/3
+
+```text
+neverland@neverlands-mbp ~ % jps   # JVM Process status                              
+4385 Launcher
+4386 EdenSurvivor
+4035 
+4523 Main
+4558 Jps
+neverland@neverlands-mbp ~ % jinfo -flag SurvivorRatio 4386
+-XX:SurvivorRatio=8
+neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
+-XX:NewRatio=2
+```
 
 参考Chapter08 - EdenSurvivor
 
+**-XX:SurvivorRatio -** 配置年轻代中，Eden空间和另外两个Survivor空间的比例，默认值是8:1:1 但在jvisualvm中观察实际的比例是6:1:1，因为有自适应分配策略。-XX:-UseAdaptiveSizePolicy \(不使用自适应分配策略\(-表示不使用，+表示使用\)\)
 
-
-
+**-Xmn** 设置新生代最大内存大小，当与-XX:NewRatio冲突时，以-Xmn为准
 
 ## 图解对象分配过程
+
+### 步骤概述
+
+* new的对象先放在伊甸园区\(Eden\)，此区有大小限制
+* 当伊甸园区空间填满，程序又需要创建对象时，JVM的垃圾回收器将对伊甸园区进行垃圾回收**\(Minor GC，又叫YGC\(Young GC\)\)**，将伊甸园区中的不再被其它对象引用的对象进行销毁。再加载新的对象放到伊甸园区
+* **当伊甸园区满时，会触发Minor GC，Minor GC会将伊甸园区和幸存者区一起垃圾回收。但幸存者区满时，不会触发Minor GC，有的对象可以直接晋升到老年区  \*面试考点**
+* 然后将伊甸园区中的剩余对象移动到幸存者0区\(Survivor 0\)
+* **特殊情况：**Minor GC之后伊甸园区应该为空（原来的对象要么被销毁，要么被放到幸存者区），如果伊甸园区空间仍然不够，说明新创建的对象是个超大对象，对象本身比伊甸园区空间还大，这时会尝试直接放到养老区。如果养老区空间不够，会触发Major GC，之后如果空间依然不够，则产生OOM异常
+* 如果再次触发垃圾回收，此时上次幸存下来的在幸存者0区的对象如果没有被回收，就会被放到幸存者1区\(Survivor 1\)
+* 如果再次经历垃圾回收，此时会重新放回0区，接着再去1区
+* Survivor 0\(S0\)和Survivor 1\(S1\)又被称为From空间和To空间，S0, S1哪个空哪个为To空间。S0,S1必然有一个是空的
+* 默认15次之后（每个对象有一个年龄计数器），会被放到养老区\(可以设置**-XX:MaxTenuringThreshold**更改默认次数\)
+* 当养老区内存不足时，会触发Major GC，进行养老区内存清理
+* 如果养老区在Major GC之后依然内存不足，就会产生OOM异常：`java.lang.OutOfMemoryError: Java heap space`
+* 垃圾回收：**频繁在新生代收集，很少在养老区收集，几乎不在永久代/元空间收集**
+
+### **图解**
+
+![&#xFF08;&#x7EA2;&#x8272;&#x4EE3;&#x8868;&#x8981;&#x9500;&#x6BC1;&#x7684;&#x5783;&#x573E;&#x5BF9;&#x8C61;&#xFF0C;&#x7EFF;&#x8272;&#x4EE3;&#x8868;&#x8981;&#x4FDD;&#x7559;&#x7684;&#x5BF9;&#x8C61;&#xFF0C;&#x6570;&#x5B57;&#x8868;&#x793A;&#x5BF9;&#x8C61;&#x5E74;&#x9F84;&#xFF09;](.gitbook/assets/screen-shot-2021-07-30-at-12.10.03-am.png)
+
+![](.gitbook/assets/screen-shot-2021-07-30-at-12.12.22-am.png)
+
+![](.gitbook/assets/screen-shot-2021-07-30-at-12.14.57-am.png)
+
+![](.gitbook/assets/screen-shot-2021-07-30-at-12.16.17-am.png)
 
 ## Minor GC, Major GC, Full GC
 
