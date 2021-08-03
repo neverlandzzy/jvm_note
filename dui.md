@@ -115,6 +115,7 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 * 当养老区内存不足时，会触发Major GC，进行养老区内存清理
 * 如果养老区在Major GC之后依然内存不足，就会产生OOM异常`java.lang.OutOfMemoryError: Java heap space`
 * 垃圾回收：**频繁在新生代收集，很少在养老区收集，几乎不在永久代/元空间收集**
+* 参考Chapter08 - HeapInstance
 
 ### **图解**
 
@@ -127,6 +128,41 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 ![](.gitbook/assets/screen-shot-2021-07-30-at-12.16.17-am.png)
 
 ## Minor GC, Major GC, Full GC
+
+### 概述
+
+* HotSpot JVM的GC按照回收区域分为两大种类型：**部分回收\(Partial GC\)和整堆回收\(Full GC\)**
+* 部分回收\(Partial GC\)：不是完整回收整个Java堆的GC
+  * **新生代回收\(Minor GC/Yound GC\)**
+  * **老年代回收\(Major GC/Old GC\)**
+  * 目前，只有CMS GC会有单独回收老年代的行为
+  * 很多时候Major GC和Full GC混淆使用，需要具体分辨是老年代还是整堆回收
+  * **混合回收\(Mixed GC\)**：回收整个新生代以及部分老年代的GC，目前只有G1 GC会有这个行为
+* 整堆回收\(Full GC\)：收集整个Java堆和方法区的GC
+
+### **新生代回收\(Minor GC\)的触发机制**
+
+* 当新生代空间不足时，会触发Minor GC。这里是指，Eden空间满会触发，Survivor满不会触发（只会晋升到老年代）
+* 因为Java对象大多数具备朝生夕灭的特性，所以Minor GC非常频繁，一般回收速度也比较快。
+* Minor GC会引发STW\(Stop-The-World \)，暂停其它的用户线程，等垃圾回收结束，用户线程才恢复运行。但因为速度比较快，对性能影响较小。
+
+### 老年代回收\(Major GC\)的触发机制
+
+* Major GC发生在老年代，对象会从老年代消失
+* 当老年代空间不足时，会尝试触发Minor GC，如果之后空间依然不足，则触发Major GC（一般来说，出现了Major GC会伴随至少一次的Minor GC，但并不绝对）
+* Major GC的速度一般比Minor GC慢10倍以上，STW的时间更长
+* 如果Major GC后，内存依然不足，则会报OOM
+
+### 整堆回收\(Full GC\)的触发机制
+
+* 调用System.gc\(\)时，系统建议执行Full GC，但不是必然执行
+* 老年代空间不足
+* 方法区空间不足
+* 通过Minor GC后进入老年代的平均大小大于老年代的可用内存
+* 由Eden区，s0区向s1区复制时，对象大于To Space可用内存，则把对象转存到老年代，且老年代可用内存小于该对象大小时
+* **Full GC是开发和调优中要尽量避免的**
+
+参考Chapter08 - GCTest
 
 ## 堆空间分代思想
 
