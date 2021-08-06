@@ -182,7 +182,28 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 * 动态对象年龄判断 - 如果Survivor区中相同年龄的所有对象大小总和大于Survivor空间的一半，年龄大于或等于该年龄的对象可以直接进入老年代，无需等到MaxTenuringThreshold中要求的年龄（默认15）
 * 空间分配担保 - -XX:HandlePromotionFailure 当大量对象在GC之后仍然存活，把Survivor中容纳不下的对象放到老年代。
 
-## 为对象分配内存 - TLAB
+## 为对象分配内存 - TLAB\(Thread Local Allocation Buffer\)
+
+### 为什么有TLAB
+
+* 堆区是线程共享区域，任何线程都可以访问到堆区中的共享数据
+* 由于对象实例的创建在JVM中非常频繁，因此在并发环境下从堆区中划分内存空间是线程不安全的
+* 为避免多个线程操作同一个地址，需要使用加锁等机制，因而影响分配速度
+
+### 什么是TLAB
+
+* 从内存模型而不是垃圾回收的角度，对Eden区继续进行划分，**JVM为每个线程分配了一个私有缓存区域**，包含在Eden空间内
+* 多线程同时分配内存时，使用TLAB可以避免一系列的线程安全问题，同时还能提升内存分配的吞吐量，因此我们可以**将这种内存分配方式称为快速分配策略**
+
+![](.gitbook/assets/screen-shot-2021-08-06-at-12.30.34-am.png)
+
+* 尽管不是所有的对象实例都能在TLAB中成功分配内存（因为TLAB空间有限），但JVM将TLAB作为内存分配的首选
+* 可以通过 **-XX:UseTLAB** 设置是否开启TLAB空间，默认开启
+* 默认情况下，TLAB空间非常小，**仅占有Eden空间的1%**。可以通过 **-XX:TLABWasteTargetPercent** 设置TLAB空间占用Eden空间的百分比
+* 一旦对象在TLAB空间分配内存失败，JVM就会尝试**通过加锁机制**在Eden空间中直接分配内存，从而确保数据操作的原子性
+* 参考Chapter08 - TLABArgs
+
+![](.gitbook/assets/screen-shot-2021-08-06-at-12.42.45-am.png)
 
 ## 小结堆空间的参数设置
 
