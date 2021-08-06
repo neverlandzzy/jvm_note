@@ -78,7 +78,7 @@ Java堆区在JVM实例启动的时候被创建，其空间大小也就确定了�
 
 ![](.gitbook/assets/screen-shot-2021-07-29-at-12.20.23-am.png)
 
-默认 -XX:NewRatio=2  表示新生代占1， 老年代占2， 新生代占整个堆的1/3
+默认 -XX:NewRatio=2 表示新生代占1， 老年代占2， 新生代占整个堆的1/3
 
 ```text
 neverland@neverlands-mbp ~ % jps   # JVM Process status                              
@@ -187,6 +187,4 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 ## 小结堆空间的参数设置
 
 ## 堆是分配对象的唯一选择吗
-
-
 
