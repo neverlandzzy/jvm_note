@@ -78,7 +78,7 @@ Java堆区在JVM实例启动的时候被创建，其空间大小也就确定了�
 
 ![](.gitbook/assets/screen-shot-2021-07-29-at-12.20.23-am.png)
 
-默认 -XX:NewRatio=2  表示新生代占1， 老年代占2， 新生代占整个堆的1/3
+默认 -XX:NewRatio=2 表示新生代占1， 老年代占2， 新生代占整个堆的1/3
 
 ```text
 neverland@neverlands-mbp ~ % jps   # JVM Process status                              
@@ -205,51 +205,7 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 
 ![](.gitbook/assets/screen-shot-2021-08-06-at-12.42.45-am.png)
 
-## 小结堆空间的常用参数设置
+## 小结堆空间的参数设置
 
-官网文档：[https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html)
-
--XX:+PrintFlagsInitial - 查看**所有参数**的默认初始值
-
--XX:+PrintFlagsFinal - 查看**所有参数**的最终值（可能会被修改为不是初始值）
-
-* 查看**具体某个参数**的指令
-  * jps 查看当前运行中的进程，获取进程id
-  * jinfo -flag SurvivorRatio &lt;进程id&gt; 
-
--Xms - 初始堆空间内存（默认为物理内存的1/64）
-
--Xmx - 最大堆空间内存（默认为物理内存的1/4）
-
--Xmn - 设置新生代的大小（初始值与最大值）
-
--XX:NewRatio - 配置新生代与老年代在堆结构的占比（默认值为2，表示新生代占1， 老年代占2， 新生代占整个堆的1/3）
-
--XX:SurvivorRatio - 配置新生代中Eden和S0/S1空间的比例（默认值为8）
-
--XX:MaxTenuringThreshold - 配置新生代垃圾的最大年龄
-
--XX:+PrintGCDetails - 打印详细的GC处理日志
-
--XX:+PrintGC \(or -verbose:gc\) - 打印简要的GC日志
-
--XX:HandlePromotionFailure - 是否设置空间分配担保
-
-## 堆是分配对象存储的唯一选择吗
-
-普遍情况下，JVM中的对象是在堆中分配内存的。但有一种特殊情况，即如果经过**逃逸分析\(Escape Analysis\)**后发现，一个对象并没有逃逸出方法的话，那么就可能被优化成**栈上分配**。这样就无需再堆上分配内存，也就无需进行GC。
-
-另一种情况是在淘宝虚拟机\(TaoBaoVM\)中的GCIH\(GC invisible heap\)技术，将生命周期较长的对象从heap中移至heap外，并且GC不能管理，从而降低GC的频率，提升回收效率。
-
-### 逃逸分析
-
-* 逃逸分析是一种可以有效减少Java程序中同步负载和内存堆分配压力的跨函数全局数据流分析算法
-* 通过逃逸分析，Java编译器能够分析出一个新的对象引用的范围从而决定是否要将这个对象分配到堆上
-* 逃逸分析的基本行为就是分析对象动态作用域
-  * 当一个对象在方法中被定义后，对象只在方法内部使用，则认为没有发生逃逸
-  * 当一个对象在方法中被定义后，它被外部方法所引用，则认为发生逃逸，例如作为调用参数传递到其它地方中
-
-
-
-
+## 堆是分配对象的唯一选择吗
 
