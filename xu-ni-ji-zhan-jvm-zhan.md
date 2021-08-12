@@ -223,3 +223,7 @@ StackOverflowError，发生在栈空间不足的情况下。可以通过-Xss设�
 
 具体视情况而定，参考Chapter05 - LocalVariablesThreadSafe
 
+
+
+
+
