@@ -205,7 +205,6 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 
 ![](.gitbook/assets/screen-shot-2021-08-06-at-12.42.45-am.png)
 
-
 ## 小结堆空间的常用参数设置
 
 官网文档：[https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html)
@@ -259,10 +258,61 @@ neverland@neverlands-mbp ~ % jinfo -flag NewRatio 4386 #check NewRation
 
 使用逃逸分析，编译器可以对代码进行如下优化
 
-* **栈上分配** - 将堆分配转化为栈分配。如果一个对象在子程序中被分配，要使指向该对象的指针永远不会逃逸，对象可能是栈分配的候选，而不是堆分配
-* **同步省略** - 如果一个对象被发现只能从一个线程被访问到，那么对于这个对象的操作可以不考虑同步
-* **分离对象或标量替换** - 有的对象可能不需要作为一个连续的内存结构存在也可以被访问到，那么该对象的部分（或全部）可以不存储在内存里，而是存在CPU的寄存器中
+* **栈上分配** 
+  * 将堆分配转化为栈分配。如果一个对象在子程序中被分配，要使指向该对象的指针永远不会逃逸，对象可能是栈分配的候选，而不是堆分配
+  * JIT编译器在编译期间根据逃逸分析的结果，如果发现一个对象没有逃逸，就可能将这个对象优化为栈上分配。分配完成后，继续在调用栈内执行，最后线程结束，栈空间被回收，无需GC
+  * 常见的**逃逸**场景 - 给成员变量赋值，方法返回值，实例引用传递（Chapter08 - EscapeAnalysis中的例子）
+  * 参考Chapter08 - StackAllocation
+* **同步省略** 
+  * 如果一个对象被发现只能从一个线程被访问到，那么对于这个对象的操作可以不考虑同步
+  * 线程同步的代价很高，降低并发性和运行性能
+  * 在动态编译同步块的时候，JIT编译器可以借助逃逸分析来判断同步块所使用的的锁对象是否只能被一个线程访问，而没有发布到其它线程。如果没有，那么JIT编译器在编译这个同步块时会取消这部分代码的同步，这样可以大大提高并发性和运行性能。这个取消同步的过程叫做**同步省略**，也叫**锁消除**
+  * 下面的代码会被JIT在编译阶段自动优化
 
+```text
+public void f() {
+    Object hollis = new Object();
+    synchronized(hollis) {
+        System.out.println(hollis);
+    }
+}
+```
 
+```text
+public void f() {
+    Object hollis = new Object();
+    System.out.println(hollis);
+}
+```
 
+* **分离对象或标量替换** 
+  * 有的对象可能不需要作为一个连续的内存结构存在也可以被访问到，那么该对象的部分（或全部）可以不存储在内存里，而是存在CPU的寄存器（对于Java来说，存在栈空间）中
+  * **标量\(Scalar\)**是指一个无法再分解成更小数据的数据。Java中的原始数据类型就是标量。相对应的，可以分解的数据叫做**聚合量\(Aggreate\)**。Java中的对象就是聚合量。
+  * 在JIT编译阶段，如果经过逃逸分析，发现一个对象不会被外界访问的话，那么经过JIT优化，就会把这个对象拆解成若干个其中包含若干个成员的变量来代替。这个过程叫做**标量替换**。
+  * 下面的代码会被JIT在编译阶段自动优化。alloc\(\)中的Point这个聚合量被替换为两个标量，从而不需要分配堆内存。
+  * -XX:+EliminateAllocations - 设置开启标量替换（默认开启）
+
+```text
+public static void main(String[] args) {
+    alloc();
+}
+
+private static void alloc() {
+    Point point = new Point();
+    System.out.println("point");
+}
+
+static class Point {
+    private int x;
+    private int y;
+}
+```
+
+```text
+private static void alloc() {
+    int x = 1;
+    int y = 2;
+    System.out.println("point");
+}
+```
 
