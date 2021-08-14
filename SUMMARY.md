@@ -8,4 +8,5 @@
 * [本地方法接口](ben-di-fang-fa-jie-kou.md)
 * [本地方法栈](ben-di-fang-fa-zhan.md)
 * [堆](dui.md)
+* [方法区](fang-fa-qu.md)
 
