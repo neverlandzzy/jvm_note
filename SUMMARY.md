@@ -12,5 +12,7 @@
 * [对象的实例化、内存布局与访问定位](dui-xiang-de-shi-li-hua-nei-cun-bu-ju-yu-fang-wen-ding-wei.md)
 * [直接内存\(Direct Memory\)](zhi-jie-nei-cun-direct-memory.md)
 * [执行引擎](zhi-hang-yin-qing.md)
-* [String Table](string-table.md)
+* [字符串常量池\(String Table, String Constant Pool\)](string-table.md)
+* [垃圾回收概述](la-ji-hui-shou-gai-shu.md)
+* [垃圾回收相关算法](la-ji-hui-shou-xiang-guan-suan-fa.md)
 
