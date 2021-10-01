@@ -55,7 +55,57 @@
 
 ## 对象的finalization机制
 
+Java提供了对象终止机制来允许开发人员提供对象被销毁前的自定义处理逻辑
+
+当GC发现没有引用指向一个对象，即垃圾回收之前，总会先调用这个对象的**finalize\(\)**方法
+
+finalize\(\)方法允许在子类中被重写，用于在对象被回收时进行资源释放。通常在这个方法中进行一些资源释放和清理工作，比如关闭文件、套接字和数据库连接等。
+
+**永远不要主动调用某个对象的finalize\(\)方法，应该交给GC调用**，因为
+
+* finalize\(\)方法可能会导致对象复活 - 参考Chapter15 - ObjectRelive
+* finalize\(\)方法的执行时间是没有保障的，它完全由GC线程决定，极端情况下，若不发生GC，则finalize\(\)方法将没有执行机会
+* 一个糟糕的finalize\(\)方法会严重影响GC性能
+
+由于finalize\(\)方法的存在，JVM中的对象一般处于三种可能的状态。如果从所有根节点都无法访问到某个对象，说明对象已经不再使用了，这样的对象需要被回收。但一个无法触及的对象可能在某一条件下在finalize\(\)中被复活，因此不能对这样的对象进行回收。
+
+* **可触及的** - 从根节点可以访问到这个对象
+* **可复活的** - 对象的所有引用都被释放，但对象可能在finalize\(\)中复活
+* **不可触及的** - 对象的finalize\(\)被调用，并且没有复活，就会进入不可触及状态。**不可触及的对象不可能被复活，因为finalize\(\)只能被调用一次。这样的对象可以被回收。**
+
+**只有对象在不可触及时才可以被回收**
+
+**判断一个对象objA是否可回收至少要经历两次标记过程：**
+
+* 如果objA到GC Roots没有引用链，则进行第一次标记
+* 进行筛选，判断此对象是否有必要执行finalize\(\)方法
+  * 如果objA没有重写finalize\(\)方法，或者finalize\(\)方法已经被JVM调用过，则JVM视为没有必要执行，objA被判定为不可触及的对象
+  * 如果objA重写了finalize\(\)方法，且还未执行过，那么objA会被插入到F-Queue队列中，由一个JVM自动创建的、低优先级的**Finalizer线程**触发其finalize\(\)方法执行
+  * finalize\(\)方法是对象逃脱死亡的最后机会。如果objA在finalize\(\)方法中与引用链上的任何一个对象建立了联系，那么在第二次标记时，objA会被移出到“即将回收”集合。之后，对象会再次出现没有引用存在的情况，这时，finalize\(\)方法不会再次被调用，对象会直接变成不可触及的状态，即**finalize\(\)方法只能被调用一次**
+
 ## MAT与JProfiler的GC Roots溯源
+
+MAT下载地址：[https://www.eclipse.org/mat/](https://www.eclipse.org/mat/)
+
+参考chapter15 - GCRootsTest
+
+获取heap dump文件
+
+* 方式1 - 命令行使用jmap `jmap -dump:format=b,live,file=GCRootsTest.bin 12794`
+
+```text
+neverland@neverlands-mbp ~ % jps                                                
+12768 Main
+12472 
+12793 Launcher
+12794 GCRootsTest
+12812 Jps
+neverland@neverlands-mbp ~ % jmap -dump:format=b,live,file=GCRootsTest.bin 12794
+Dumping heap to /Users/neverland/GCRootsTest.bin ...
+Heap dump file created
+```
+
+* 方式2 - 使用JVisualVM导出: 选中进程 -&gt; Monitor -&gt; heap dump -&gt; 保存到本地
 
 ## 清除阶段：标记-清除算法
 
@@ -68,4 +118,8 @@
 ## 分代收集算法
 
 ## 增量收集算法、分区算法
+
+
+
+
 
